@@ -400,6 +400,7 @@ body.migon #hints { display: none !important; }
 .migcap .x { position: static; background: transparent; border: 1px solid var(--line); color: var(--ink-dim); border-radius: 999px; width: 30px; height: 30px; padding: 0; cursor: pointer; font-size: 12px; }
 
 body.solar #migCap, body.solar .miglab { display: none !important; }
+body.touring #migPlay, body.touring #migClose { display: none; }
 #hintText { display: none !important; }
 </style>
 
@@ -524,10 +525,8 @@ body.solar #migCap, body.solar .miglab { display: none !important; }
           <button class="toggle" id="tCities" aria-pressed="false">City names</button>
           <button class="toggle" id="tCountries" aria-pressed="true">Country names</button>
           <button class="toggle" id="tBorders" aria-pressed="false">Borders</button>
-          <button class="toggle" id="tGrid" aria-pressed="false">Equator &amp; tropics</button>
           <button class="toggle" id="tHeight" aria-pressed="false">Population as height</button>
           <button class="toggle" id="tSolar" aria-pressed="false">Solar system</button>
-          <button class="toggle" id="tLapse" aria-pressed="false">Day and night, sped up</button>
         </div>
         <span class="label grp" id="grpLive">Life and sound</span>
         <div class="row">
@@ -535,9 +534,7 @@ body.solar #migCap, body.solar .miglab { display: none !important; }
           <button class="toggle" id="tEvents" aria-pressed="true">Right now</button>
           <button class="toggle" id="tSound" aria-pressed="false">Sound</button>
           <button class="btn" id="tAlone">Only you</button>
-          <button class="toggle" id="tLife" aria-pressed="false">Life ahead instead of number</button>
           <button class="toggle" id="tMig" aria-pressed="false">Migrations</button>
-          <button class="toggle ghost" id="tGhosts" aria-pressed="false">People who lived before</button><span class="hint" id="ghostScale" style="align-self:center"></span>
         </div>
         <span class="label grp" id="grpTime">Time</span>
         <div class="timeRow"><label class="label" for="yearSlider" id="yearWord">Year</label><input type="range" id="yearSlider" min="0" max="26" step="1" value="26"><span id="yearLabel">Today</span></div>
@@ -1722,7 +1719,6 @@ function onAnimals(m) {
   for (const l of anLayers) l.target = 0;
   for (let r = 0; r < NR; r++) {
     anStats.perDot[r] = perDot[r]; anStats.dots[r] = dots[r];
-    if (REALMS[r].kind === 4 && dots[r]) $('ghostScale').textContent = perDot[r] === 1 ? T('1 dot = 1 person who lived before', '1 Punkt = 1 Mensch, der vor uns lebte') : T(`1 dot ≈ ${fmtBig(perDot[r])} people who lived before`, `1 Punkt ≈ ${fmtBig(perDot[r])} Menschen, die vor uns lebten`);
     const el = document.getElementById('pd-' + REALMS[r].id);
     if (el && dots[r]) el.textContent = perDot[r] === 1 ? T('1 dot = 1', '1 Punkt = 1') : T(`1 dot ≈ ${fmtBig(perDot[r])}`, `1 Punkt ≈ ${fmtBig(perDot[r])}`);
     if (!dots[r]) continue;
@@ -2165,7 +2161,7 @@ const FEEL = [
   { t: () => 'Half of all people live inside this circle', p: () => 'In this map’s data, half of all people live within <strong>3,500 km</strong> of the point where Myanmar, Laos and China meet: China, India, Bangladesh, Southeast Asia. The circle covers about 7% of the planet’s surface.', go: () => flyTo(24, 98, 11000, 4), circle: true },
   { t: () => 'About 4 babies a second', p: () => 'The warm flashes are births, in real time, at places where people live. The cool fading lights are deaths, about <strong>2 per second</strong>. Each day humanity grows by roughly <strong>190,000</strong> people, a city the size of Geneva.' },
   { t: () => 'For every person alive', p: () => 'there are about <strong>6 wild birds</strong>, 3 chickens, 2.4 million ants, 1.2 billion insects, roughly 120,000 sea fish, 12 billion copepods and <strong>53 billion</strong> tiny roundworms in the soil. The coloured layers show where they live. Open “Compare the numbers” to see them as piles of sand.', go: () => setAnimals(true) },
-  { t: () => 'Most people who ever lived are gone', p: () => 'About <strong>117 billion</strong> humans have ever been born. Today’s 8.3 billion are only about 7% of them. Switch on “People who lived before” to see the other 109 billion as a faint violet haze, and move the year slider to watch humanity grow from a few million.', go: () => { ghostsOn = true; $('tGhosts').setAttribute('aria-pressed', true); syncAnimals(); } },
+  { t: () => 'Most people who ever lived are gone', p: () => 'About <strong>117 billion</strong> humans have ever been born. Today’s 8.3 billion are only about 7% of them. Move the year slider under “More features” to watch humanity grow from a few million.' },
   { t: () => 'One of them is you', p: () => `The teal light in ${homeLabel()} is you: one of <strong id="youOf">${fmt(popNow())}</strong>. From space you vanish into the glow. Dive in and you are one speck among your neighbours, exactly as bright as everyone else.`, go: () => goHome() },
 ];
 let feelIdx = 0;
@@ -2212,7 +2208,6 @@ function revealF(r) {
 }
 $('tAnimals').onclick = () => { if (!animalsOn && !tour) startReveal(); setAnimals(!animalsOn); };
 $('yearSlider').oninput = e => setYear(STOPS[+e.target.value]);
-$('tGhosts').onclick = () => { ghostsOn = !ghostsOn; $('tGhosts').setAttribute('aria-pressed', ghostsOn); $('ghostScale').textContent = ghostsOn ? '' : ''; syncAnimals(); };
 $('tCities').onclick = () => { citiesOn = !citiesOn; $('tCities').setAttribute('aria-pressed', citiesOn); };
 $('findMe').onclick = () => { feelIdx = FEEL.length - 1; renderFeel(false); goHome(); };
 $('home').onclick = () => flyTo(30, view.lon, 17500, 3.5);
@@ -2292,7 +2287,7 @@ updateSun(); setInterval(() => { if (!lapseOn) updateSun(); }, 5000);
 // time-lapse: one day in 24 seconds, so the line between day and night visibly sweeps round the planet
 let lapseT = 0;
 function setLapse(on) {
-  lapseOn = !!on; $('tLapse').setAttribute('aria-pressed', lapseOn);
+  lapseOn = false;
   if (!lapseOn) { lapseOff = 0; updateSun(); const el = $('gfxToast'); if (el._lapse) { el.hidden = true; el._lapse = false; } }
 }
 function stepLapse(dt) {
@@ -2302,7 +2297,6 @@ function stepLapse(dt) {
   const hh = String(d.getUTCHours()).padStart(2, '0'), mm = String(Math.floor(d.getUTCMinutes() / 10) * 10).padStart(2, '0');
   el.textContent = T(`Time-lapse, one day in 24 seconds · ${hh}:${mm} world time (UTC) · ≈ ${dec(sleepN / 1e9, 1)} billion people asleep`, `Zeitraffer, ein Tag in 24 Sekunden · ${hh}:${mm} Uhr Weltzeit (UTC) · ≈ ${dec(sleepN / 1e9, 1)} Milliarden Menschen schlafen`);
 }
-$('tLapse').onclick = () => setLapse(!lapseOn);
 // ================= right now: what happens every second =================
 const gix = id => GID.indexOf(id);
 const YEAR_S = 31557600; let evLast = performance.now(); const evOpen = performance.now();
@@ -2545,6 +2539,7 @@ function kingdomSteps() {
   });
   return out;
 }
+const migCam = (lat, lon, alt) => () => ({ lat, lon, alt: alt * (camera.aspect < 0.8 ? 1.7 : 1) });   // long routes: pull back further on a tall phone screen
 const TOURS = {
   main: {
     t: () => T('The big tour', 'Die große Tour'), d: () => T('People, empty places, what happens every second, animals, then and now, and you.', 'Menschen, leere Gegenden, was jede Sekunde passiert, Tiere, früher und heute, und du.'),
@@ -2600,9 +2595,9 @@ const TOURS = {
         t: () => T('Then it speeds up', 'Dann wird es schnell'), p: () => T('Better food, clean water and medicine: <strong>2 billion</strong> in 1927, 2.5 billion in 1950.', 'Bessere Ernährung, sauberes Wasser und Medizin: <strong>2 Milliarden</strong> 1927, 2,5 Milliarden 1950.') },
       { hold: 10, anim: yearSweep(1950, 'now'),
         t: () => T('More than tripled since 1950', 'Seit 1950 mehr als verdreifacht'), p: () => T('Each new billion took only about 12 years: <strong>1974, 1987, 1999, 2011, 2022</strong>.', 'Jede weitere Milliarde kam in nur rund 12 Jahren: <strong>1974, 1987, 1999, 2011, 2022</strong>.') },
-      { hold: 9, set: { year: 'now' }, ghosts: true,
-        t: () => T('Everyone who ever lived', 'Alle, die je gelebt haben'), p: () => T('About <strong>117 billion</strong> people have ever been born. The violet haze shows the 109 billion who are gone. Today’s 8.3 billion are only about 7% of all of us.', 'Etwa <strong>117 Milliarden</strong> Menschen wurden je geboren. Der violette Schleier zeigt die 109 Milliarden, die nicht mehr leben. Die heutigen 8,3 Milliarden sind nur etwa 7 % von uns allen.') },
-      { lat: 2, lon: 20, alt: 12000, hold: 9, ghosts: false,
+      { hold: 9, set: { year: 'now' },
+        t: () => T('Everyone who ever lived', 'Alle, die je gelebt haben'), p: () => T('About <strong>117 billion</strong> people have ever been born. 109 billion of them are gone. Today’s 8.3 billion are only about 7% of all of us.', 'Etwa <strong>117 Milliarden</strong> Menschen wurden je geboren. 109 Milliarden davon leben nicht mehr. Die heutigen 8,3 Milliarden sind nur etwa 7 % von uns allen.') },
+      { lat: 2, lon: 20, alt: 12000, hold: 9,
         t: () => T('What comes next', 'Wie es weitergeht'), p: () => T('The UN expects humanity to peak at about <strong>10.3 billion in the mid-2080s</strong> and then to shrink slowly. Most of the growth until then happens in Africa south of the Sahara.', 'Die UN erwartet einen Höhepunkt von etwa <strong>10,3 Milliarden Mitte der 2080er-Jahre</strong>, danach schrumpft die Menschheit langsam. Der größte Teil des Wachstums bis dahin findet in Afrika südlich der Sahara statt.') },
       { lat: 15, lon: 60, alt: 18000, hold: 8, set: { events: true },
         t: () => T('Born and gone, right now', 'Geboren und gegangen, genau jetzt'), p: () => T('About 4 births and 2 deaths every second, about <strong>190,000 more people every day</strong>, a city the size of Geneva.', 'Etwa 4 Geburten und 2 Todesfälle pro Sekunde, das sind etwa <strong>190.000 Menschen mehr pro Tag</strong>, eine Stadt so groß wie Genf.') },
@@ -2684,6 +2679,24 @@ const TOURS = {
         t: () => T('A thin shell', 'Eine dünne Hülle'), p: () => T('Almost all the air lies within the lowest 30 km, less than 1% of the Earth’s radius. That thin layer, the water and the warmth of the Sun are what all these lives depend on.', 'Fast die ganze Luft liegt in den untersten 30 km, weniger als 1 % des Erdradius. Diese dünne Schicht, das Wasser und die Wärme der Sonne sind das, wovon all diese Leben abhängen.') },
       { ...HOME_YOU, p: () => T('One light among 8.3 billion, on the only place we know that is alive.', 'Ein Licht unter 8,3 Milliarden, auf dem einzigen Ort, von dem wir wissen, dass er lebt.') },
     ] },
+  migrations: {
+    t: () => T('Great journeys', 'Große Wanderungen'), d: () => T('Wildebeest, migrant birds, godwits and salmon, month by month through the year.', 'Gnus, Zugvögel, Pfuhlschnepfen und Lachse, Monat für Monat durchs Jahr.'),
+    steps: [
+      { cam: migCam(18, 10, 21000), dur: 4, hold: 9, set: { people: false, animals: false, events: false, year: 'now' }, act: () => { setMig(true); migT = migNow(); },
+        t: () => T('Great journeys', 'Große Wanderungen'), p: () => T('Every year billions of animals travel thousands of kilometres. Each stream of light is one journey, month by month; the month is shown below. The people are switched off for now, so the travellers stand out.', 'Jedes Jahr reisen Milliarden Tiere Tausende Kilometer. Jeder Lichtstrom ist eine Reise, Monat für Monat; der Monat steht unten. Die Menschen sind dafür kurz ausgeblendet, damit man die Reisenden sieht.') },
+      { lat: -2.3, lon: 34.7, alt: 520, dur: 5, hold: 18, act: () => { setMig(true); migT = 0; }, anim: p => { migT = 12 * p; },
+        t: () => T('Wildebeest: a circle of rain', 'Gnus: ein Kreis dem Regen nach'), p: () => T('About <strong>1.3 million wildebeest</strong>, with some 200,000 zebras and gazelles, circle through the Serengeti and the Maasai Mara every year, following the rain to fresh grass. In February about half a million calves are born within a few weeks in the south. From July the herds cross the Mara River into Kenya, where crocodiles wait.', 'Etwa <strong>1,3 Millionen Gnus</strong>, dazu rund 200.000 Zebras und Gazellen, ziehen jedes Jahr im Kreis durch Serengeti und Masai Mara, dem Regen und dem frischen Gras nach. Im Februar kommen im Süden innerhalb weniger Wochen etwa eine halbe Million Kälber zur Welt. Ab Juli queren die Herden den Mara-Fluss nach Kenia, wo Krokodile warten.') },
+      { cam: migCam(14, 24, 12500), dur: 5, hold: 18, act: () => { setMig(true); migT = 7.5; }, anim: p => { migT = 7.5 + 9 * p; },
+        t: () => T('Europe to Africa and back', 'Von Europa nach Afrika und zurück'), p: () => T('About <strong>2 billion birds</strong> leave Europe for Africa each autumn. Many small songbirds cross the Mediterranean and the Sahara in one go, mostly at night, some for up to two days and nights without stopping. Storks avoid the open sea and go round it, over the Bosporus or Gibraltar. In spring they all come back to breed.', 'Etwa <strong>2 Milliarden Vögel</strong> ziehen jeden Herbst von Europa nach Afrika. Viele kleine Singvögel überqueren Mittelmeer und Sahara in einem Stück, meist nachts, manche bis zu zwei Tage und Nächte ohne Pause. Störche meiden das offene Meer und fliegen außen herum, über den Bosporus oder Gibraltar. Im Frühling kommen alle zurück, um zu brüten.') },
+      { cam: migCam(24, -84, 13500), dur: 5, hold: 16, act: () => { setMig(true); migT = 7.5; }, anim: p => { migT = 7.5 + 9 * p; },
+        t: () => T('The Americas: fewer come back', 'Amerika: weniger kehren zurück'), p: () => T('In autumn about <strong>4.7 billion birds</strong> fly south from the USA and Canada; in spring only about 3.5 billion return (Dokter et al. 2018). The difference is how many die on the way and over winter. A ruby-throated hummingbird, about 3 grams, crosses the Gulf of Mexico non-stop, some 800 km.', 'Im Herbst fliegen etwa <strong>4,7 Milliarden Vögel</strong> aus den USA und Kanada nach Süden; im Frühling kehren nur etwa 3,5 Milliarden zurück (Dokter et al. 2018). Der Unterschied zeigt, wie viele unterwegs und im Winter sterben. Ein Rubinkehlkolibri, etwa 3 Gramm schwer, überquert den Golf von Mexiko nonstop, rund 800 km.') },
+      { cam: migCam(12, -176, 16500), dur: 6, hold: 14, act: () => { setMig(true); migT = 7.6; }, anim: p => { migT = 7.6 + 2.2 * p; },
+        t: () => T('Godwits: 11,000 km without a stop', 'Pfuhlschnepfen: 11.000 km ohne Halt'), p: () => T('Bar-tailed godwits fly from Alaska to New Zealand without landing once: <strong>11,000 km or more in 8 to 11 days</strong>, without eating, drinking or resting. Before they leave they nearly double their weight in fat and shrink their digestive organs. The record, set in 2022 by a young bird: 13,560 km in 11 days.', 'Pfuhlschnepfen fliegen von Alaska nach Neuseeland, ohne ein einziges Mal zu landen: <strong>11.000 km oder mehr in 8 bis 11 Tagen</strong>, ohne zu fressen, zu trinken oder zu rasten. Vor dem Abflug verdoppeln sie fast ihr Gewicht an Fett und verkleinern ihre Verdauungsorgane. Den Rekord stellte 2022 ein junger Vogel auf: 13.560 km in 11 Tagen.') },
+      { lat: 56.5, lon: -161, alt: 1500, dur: 6, hold: 14, act: () => { setMig(true); migT = 3.5; }, anim: p => { migT = 3.5 + 5 * p; },
+        t: () => T('Salmon: back to the stream of their birth', 'Lachse: zurück in den Bach ihrer Geburt'), p: () => T('After one to three years in the ocean, sockeye salmon find their way back to the very stream where they hatched, guided by the Earth’s magnetic field and by smell. In Bristol Bay, Alaska, <strong>50 to 80 million</strong> return each summer, the largest sockeye run on Earth. They spawn once and die; their bodies feed bears, eagles and the forest.', 'Nach ein bis drei Jahren im Ozean finden Rotlachse zurück in genau den Bach, in dem sie geschlüpft sind, geleitet vom Magnetfeld der Erde und vom Geruch. In der Bristol Bay in Alaska kehren jeden Sommer <strong>50 bis 80 Millionen</strong> zurück, der größte Rotlachszug der Erde. Sie laichen einmal und sterben; ihre Körper ernähren Bären, Adler und den Wald.') },
+      { cam: migCam(22, -40, 24000), dur: 6, hold: 20, set: { people: true }, act: () => { setMig(true); migT = migNow(); }, anim: p => { migT = migNow() + 12 * p; },
+        t: () => T('A whole year at once', 'Ein ganzes Jahr auf einmal'), p: () => T('All five together, one year in 20 seconds. And these are only five of countless journeys: whales, turtles, butterflies, bats, eels, and the plankton that rises and sinks in the ocean every night, the largest migration on Earth.', 'Alle fünf zusammen, ein Jahr in 20 Sekunden. Und das sind nur fünf von unzähligen Reisen: Wale, Schildkröten, Schmetterlinge, Fledermäuse, Aale und das Plankton, das jede Nacht im Ozean auf- und absteigt, die größte Wanderung der Erde.') },
+    ] },
   compare: {
     t: () => T('Compare the numbers', 'Zahlen vergleichen'), d: () => T('Every living thing as a grain of sand, from all people to all bacteria, then everything by weight.', 'Jedes Lebewesen als Sandkorn, von allen Menschen bis zu allen Bakterien, dann alles nach Gewicht.'),
     steps: [
@@ -2709,9 +2722,10 @@ function iconColor(id) { const r = GID.indexOf(id); if (r >= 0) return REALMS[r]
 // drawings for the steps of the other tours
 const TOUR_ICONS = { main: { 11: ['chickens', 'pigs', 'cattle', 'fish', 'trees'], 12: ['insects', 'nematodes', 'birds', 'fish'], 13: 'krill' },
   animals: { 0: ['insects', 'nematodes', 'birds', 'fish'], 1: 'insects', 2: 'ants', 3: ['nematodes', 'springtails', 'mites'], 4: 'birds', 5: ['copepods', 'fish'], 6: ['corals', 'krill', 'squid', 'marinemammals'], 7: ['cattle', 'pigs', 'chickens', 'mammals'], 10: 'marinemammals', 11: ['nematodes', 'earthworms'] },
+  migrations: { 1: 'mammals', 2: 'birds', 3: 'birds', 4: 'birds', 5: 'fish' },
   invisible: { 0: 'plants', 1: 'trees', 2: 'fungi', 3: 'bacteria', 4: 'protists', 5: 'viruses', 6: ['plants', 'fungi', 'bacteria', 'nematodes'] } };
 for (const id in TOUR_ICONS) for (const i in TOUR_ICONS[id]) TOURS[id].steps[i].icon = TOUR_ICONS[id][i];
-const TOUR_ORDER = ['main', 'cosmos', 'people', 'animals', 'kingdom', 'invisible', 'compare'];
+const TOUR_ORDER = ['main', 'cosmos', 'people', 'animals', 'kingdom', 'invisible', 'migrations', 'compare'];
 let tour = null, tourSpeed = 1; try { tourSpeed = +localStorage.getItem('ebl-tourspeed') || 1; } catch (e) {}
 const SPEEDS = [[0.5, () => T('very slow', 'sehr langsam')], [0.75, () => T('slow', 'langsam')], [1, () => T('normal', 'normal')], [1.5, () => T('fast', 'schnell')]];
 const tourLen = id => TOURS[id].steps.reduce((s, x) => s + (x.lat != null || x.cam ? (x.dur || 4) : x.sol ? 2.6 : 0) + x.hold, 0) / tourSpeed;
@@ -2746,7 +2760,6 @@ function tourGo(i) {
   const s = L[i], st = tourState(L, i); if (!s.keepOv) ovClose();
   tourSet(st.set); setRotate(false); showCircle = !!s.circle;
   for (const k in groupOn) groupOn[k] = k !== 'ghosts' && (st.groups === 'all' || st.groups.includes(k)); syncAnimals();
-  if (ghostsOn !== st.ghosts) $('tGhosts').click();
   tour.i = i; tour.phase = 'fly'; tour.until = 0; tour.start = performance.now(); tour.pausedAt = 0; tour.fd = 0;
   if (s.act) s.act();
   renderTourCap();
@@ -2765,7 +2778,7 @@ function tourGo(i) {
 let tourSnap = null;
 function startTour(id) {
   closeTourMenu(); exitSolar(); try { localStorage.setItem('ebl-toured', '1'); } catch (e) {} $('tourBtn').classList.remove('first');
-  tourSnap = { people: peopleOn, cities: citiesOn, events: showEvents, animals: animalsOn, realms: Object.keys(realmOn).filter(k => realmOn[k]), year: year >= NOW_YEAR ? 'now' : year, groups: { ...groupOn }, ghosts: ghostsOn, rotate: autoRotate, cmp: cmpMode, grid: latLines.visible, hz: $('hzChk').checked };
+  tourSnap = { people: peopleOn, cities: citiesOn, events: showEvents, animals: animalsOn, realms: Object.keys(realmOn).filter(k => realmOn[k]), year: year >= NOW_YEAR ? 'now' : year, groups: { ...groupOn }, ghosts: ghostsOn, rotate: autoRotate, cmp: cmpMode, grid: latLines.visible, hz: $('hzChk').checked, mig: migOn };
   $('evTip').hidden = true; $('infoCard').hidden = true; $('tourCap').hidden = false; document.body.classList.add('touring');
   tour = { id, i: 0, paused: false }; tourGo(0);
 }
@@ -2773,7 +2786,7 @@ function stopTour() {
   if (!tour && $('tourCap').hidden) return; if (tour) fly = null; tour = null; showCircle = false;
   $('tourCap').hidden = true; document.body.classList.remove('touring'); ovClose();
   exitSolar();
-  if (tourSnap) { const s = tourSnap; tourSnap = null; Object.assign(groupOn, s.groups); if (ghostsOn !== s.ghosts) $('tGhosts').click(); tourSet(s); syncAnimals(); setRotate(s.rotate); if (cmpMode !== s.cmp) setCmpMode(s.cmp); latLines.visible = s.grid; $('tGrid').setAttribute('aria-pressed', s.grid); setHz(s.hz); }
+  if (tourSnap) { const s = tourSnap; tourSnap = null; Object.assign(groupOn, s.groups); tourSet(s); syncAnimals(); setRotate(s.rotate); if (cmpMode !== s.cmp) setCmpMode(s.cmp); latLines.visible = s.grid; setHz(s.hz); migT = null; setMig(s.mig); }
 }
 function pauseTour(p) {
   if (!tour) return; const now = performance.now();
@@ -2921,7 +2934,7 @@ const FEEL_DE = [
   [() => 'Die Hälfte aller Menschen lebt in diesem Kreis', () => 'In den Daten dieser Karte lebt die Hälfte aller Menschen höchstens <strong>3.500 km</strong> von dem Punkt entfernt, wo Myanmar, Laos und China aneinanderstoßen: China, Indien, Bangladesch, Südostasien. Der Kreis bedeckt etwa 7 % der Erdoberfläche.'],
   [() => 'Etwa 4 Babys pro Sekunde', () => 'Die warmen Blitze sind Geburten, in Echtzeit, dort wo Menschen leben. Die kühlen, verblassenden Lichter sind Todesfälle, etwa <strong>2 pro Sekunde</strong>. Die bunten kleinen Blitze sind geschlachtete Tiere, gefangene Fische und gefällte Bäume; klick einen an. Jeden Tag wächst die Menschheit um etwa <strong>190.000</strong> Menschen, eine Stadt so groß wie Genf.'],
   [() => 'Für jeden lebenden Menschen', () => 'gibt es etwa <strong>6 wilde Vögel</strong>, 3 Hühner, 2,4 Millionen Ameisen, 1,2 Milliarden Insekten, rund 120.000 Meeresfische, 12 Milliarden Ruderfußkrebse und <strong>53 Milliarden</strong> winzige Fadenwürmer im Boden. Die farbigen Schichten zeigen, wo sie leben. Öffne „Zahlen vergleichen“, um sie als Sandhaufen zu sehen.'],
-  [() => 'Die meisten Menschen, die je lebten, sind fort', () => 'Etwa <strong>117 Milliarden</strong> Menschen wurden jemals geboren. Die heutigen 8,3 Milliarden sind nur etwa 7 % davon. Schalte „Menschen, die vor uns lebten“ ein, um die anderen 109 Milliarden als zarten violetten Schleier zu sehen, und bewege den Jahresregler, um die Menschheit aus wenigen Millionen wachsen zu sehen.'],
+  [() => 'Die meisten Menschen, die je lebten, sind fort', () => 'Etwa <strong>117 Milliarden</strong> Menschen wurden jemals geboren. Die heutigen 8,3 Milliarden sind nur etwa 7 % davon. Bewege den Jahresregler unter „Mehr Funktionen“, um die Menschheit aus wenigen Millionen wachsen zu sehen.'],
   [() => 'Einer davon bist du', () => `Das türkise Licht in ${homeLabel()} bist du: einer von <strong id="youOf">${fmt(popNow())}</strong>. Aus dem All verschwindest du im Leuchten. Tauch hinein, und du bist ein Pünktchen unter deinen Nachbarn, genau so hell wie alle anderen.`],
 ];
 FEEL.forEach((f, i) => { bil(f, 't', FEEL_DE[i][0]); bil(f, 'p', FEEL_DE[i][1]); });
@@ -2931,10 +2944,10 @@ const CITY_DE = { Vienna: 'Wien', Rome: 'Rom', Moscow: 'Moskau', Prague: 'Prag',
 const cityName = n => LANG === 'de' && CITY_DE[n] ? CITY_DE[n] : n;
 // static texts in the page, by element id: [English, German]
 const STATIC = {
-  tourBtn: ['Guided tour', 'Geführte Tour'], tLapse: ['Day and night, sped up', 'Tag und Nacht im Zeitraffer'], tAlone: ['Only you', 'Nur du'], tLife: ['Life ahead instead of number', 'Lebenszeit statt Anzahl'], tMig: ['Migrations', 'Wanderungen'], solLight: ['Send out light', 'Licht losschicken'], home: ['Whole Earth', 'Ganze Erde'], tRotate: ['Rotate', 'Drehen'],
-  tEvents: ['Right now', 'Genau jetzt'], tBorders: ['Borders', 'Grenzen'], tCountries: ['Country names', 'Ländernamen'], tGrid: ['Equator &amp; tropics', 'Äquator &amp; Wendekreise'], tSound: ['Sound', 'Ton'], tPeople: ['People', 'Menschen'], tCities: ['City names', 'Städtenamen'], gfxWord: ['Graphics', 'Grafik'],
+  tourBtn: ['Guided tour', 'Geführte Tour'], tAlone: ['Only you', 'Nur du'], tMig: ['Migrations', 'Wanderungen'], solLight: ['Send out light', 'Licht losschicken'], home: ['Whole Earth', 'Ganze Erde'], tRotate: ['Rotate', 'Drehen'],
+  tEvents: ['Right now', 'Genau jetzt'], tBorders: ['Borders', 'Grenzen'], tCountries: ['Country names', 'Ländernamen'], tSound: ['Sound', 'Ton'], tPeople: ['People', 'Menschen'], tCities: ['City names', 'Städtenamen'], gfxWord: ['Graphics', 'Grafik'],
   tAnimals: ['All animals', 'Alle Tiere'], openCompare: ['Compare the numbers', 'Zahlen vergleichen'], openCompare2: ['Compare the numbers', 'Zahlen vergleichen'],
-  yearWord: ['Year', 'Jahr'], tGhosts: ['People who lived before', 'Menschen, die vor uns lebten'],
+  yearWord: ['Year', 'Jahr'],
   hintText: ['Scroll or pinch to zoom toward the pointer, drag to move, double-click to dive in. Keep zooming until one light is one person. Click a flash to see what it is, or anywhere else to see what lives there. Up close, people follow the 1 km GHSL 2025 population grid (sparsest regions: modelled), never anyone’s real address.',
     'Scrollen oder mit zwei Fingern zoomen, ziehen zum Bewegen, Doppelklick zum Eintauchen. Zoom weiter, bis ein Licht ein Mensch ist. Klick einen Blitz an, um zu sehen, was er bedeutet, oder irgendwo sonst, um zu sehen, was dort lebt. Aus der Nähe folgen die Menschen dem 1-km-Bevölkerungsraster GHSL 2025 (am dünnsten besiedelte Gegenden: modelliert), nie einer echten Adresse.'],
   timeText: ['Past years: each country is scaled to its population then, inside today’s borders and settlement pattern.', 'Frühere Jahre: Jedes Land ist auf seine damalige Bevölkerung skaliert, innerhalb heutiger Grenzen und Siedlungsmuster.'],
@@ -3129,7 +3142,6 @@ function stepGeo() {
   }
   for (let i = used; i < ctryPool.length; i++) ctryPool[i].hidden = true;
 }
-$('tGrid').onclick = () => { latLines.visible = !latLines.visible; $('tGrid').setAttribute('aria-pressed', latLines.visible); };
 $('tCountries').onclick = () => { countriesOn = !countriesOn; $('tCountries').setAttribute('aria-pressed', countriesOn); };
 
 // ================= the solar system: zoom out past the Earth to see where we are =================
@@ -3565,11 +3577,10 @@ const LIFE_TOTAL = (() => {   // all the years of life still ahead of everyone a
 })();
 function stepLife(dt) { lifeNow += ((lifeOn ? 1 : 0) - lifeNow) * Math.min(1, dt * 2); if (Math.abs(lifeNow) < 0.002) lifeNow = 0; peopleMat.uniforms.uLife.value = lifeNow; }
 function setLife(on) {
-  lifeOn = !!on; $('tLife').setAttribute('aria-pressed', lifeOn); if (!lifeOn) return;
+  lifeOn = !!on; if (!lifeOn) return;
   const el = $('gfxToast'); el._lapse = false; el.textContent = T(`Each light now shines as bright as the years this person probably still has ahead: children bright, the old dim. Between countries it partly evens out: young countries have many children, but a child in Niger can expect fewer years than a child in Japan. Together, everyone alive has about ${fmtBig(LIFE_TOTAL * popNow())} years ahead, ${Math.round(LIFE_TOTAL)} each on average.`, `Jedes Licht leuchtet jetzt so hell wie die Jahre, die dieser Mensch wahrscheinlich noch vor sich hat: Kinder hell, Alte gedämpft. Zwischen Ländern gleicht sich das teils aus: Junge Länder haben viele Kinder, aber ein Kind in Niger hat statistisch weniger Jahre vor sich als ein Kind in Japan. Zusammen haben alle Lebenden etwa ${fmtBig(LIFE_TOTAL * popNow())} Lebensjahre vor sich, im Schnitt ${Math.round(LIFE_TOTAL)} pro Mensch.`);
   el.hidden = false; clearTimeout(el._t); el._t = setTimeout(() => { el.hidden = true; }, 14000);
 }
-$('tLife').onclick = () => setLife(!lifeOn);
 // ================= migrations: a few great journeys, where they are in the year =================
 // month-by-month centres (Jan … Dec), simplified from tracking studies; the lights trail behind along the route
 const MIG = [
@@ -3605,7 +3616,7 @@ const migNow = () => { const d = new Date(), y0 = Date.UTC(d.getUTCFullYear(), 0
 const _mv = new THREE.Vector3(), _mt = new THREE.Vector3(), _mu = new THREE.Vector3();
 function stepMig(dt) {
   if (!migOn || SOL.on) { migLabs.forEach(l => { l.hidden = true; }); return; }
-  if (migT != null) { migT += dt * 12 / 36; if (migT - migNow() > 12) { migT = null; renderMigCap(); } }   // a year in 36 seconds
+  if (migT != null && !tour) { migT += dt * 12 / 36; if (migT - migNow() > 12) { migT = null; renderMigCap(); } }   // a year in 36 seconds
   const m = migT != null ? migT : migNow(), arr = migGeo.attributes.position.array, tt = performance.now() / 1000; let o = 0;
   MIG.forEach((r, ri) => {
     for (let i = 0; i < r.n; i++, o++) {
@@ -3632,7 +3643,9 @@ function setMig(on) { migOn = !!on; migPts.visible = migOn; document.body.classL
 $('tMig').onclick = () => setMig(!migOn);
 $('migPlay').onclick = () => { migT = migT != null ? null : migNow(); renderMigCap(); };
 $('migClose').onclick = () => setMig(false);
-setInterval(() => { if (!migOn) return; const bt = document.querySelector('.bottom'); if (bt && bt.offsetParent) $('migCap').style.bottom = (innerHeight - bt.getBoundingClientRect().top + 10) + 'px'; }, 300);
+setInterval(() => { if (!migOn) return; const mc = $('migCap'), tc = $('tourCap'), bt = document.querySelector('.bottom');
+  if (!tc.hidden && innerWidth <= 760) { mc.style.bottom = 'auto'; mc.style.top = (document.querySelector('.hud .top').getBoundingClientRect().bottom + 8) + 'px'; return; }   // phones on a tour: under the count, so the middle stays free
+  mc.style.top = ''; const ref = !tc.hidden ? tc : bt && bt.offsetParent ? bt : null; if (ref) mc.style.bottom = (innerHeight - ref.getBoundingClientRect().top + 10) + 'px'; }, 200);
 // ================= first visit: three gentle hints, each disappears once you have done it =================
 const HINTS = [
   ['zoom', () => T('Zoom in until each light is one person', 'Zoom hinein, bis jedes Licht ein Mensch ist'), () => flyTo(HOME.lat, HOME.lon, 4, 5)],
@@ -3672,7 +3685,7 @@ function resetAll() {
   $('src').hidden = true; $('depth').hidden = true; if (heightOn) $('tHeight').click(); SOL.real = false; $('realChk').checked = false; exitSolar(); stopTour(); closeTourMenu(); ovClose(); $('gfx').hidden = true; $('disc').hidden = true; $('evTip').hidden = true; $('infoCard').hidden = true;
   const want = (on, cur, id) => { if (on !== cur) $(id).click(); };
   want(true, peopleOn, 'tPeople'); want(false, citiesOn, 'tCities'); want(true, showEvents, 'tEvents'); want(false, borders.visible, 'tBorders');
-  want(true, countriesOn, 'tCountries'); want(false, latLines.visible, 'tGrid'); want(false, ghostsOn, 'tGhosts');
+  want(true, countriesOn, 'tCountries'); latLines.visible = false;
   setSound(false); setLapse(false); aloneEnd(); REVEAL.t0 = 0; setLife(false); setMig(false);
   Object.assign(realmOn, { land: true, soil: true, sky: true, water: true, micro: false, plants: false });
   for (const k in groupOn) groupOn[k] = k !== 'ghosts';
