@@ -4,4 +4,4 @@
 
 Every person and animal on Earth as lights on a 3D globe.
 
-Made with AI (Claude). An approximation, no guarantee of accuracy. Sources and licences are listed on the page under "Sources & licences".
+Made with AI. An approximation, no guarantee of accuracy. Sources and licences are listed on the page under "Sources & licences".
