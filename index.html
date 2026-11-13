@@ -447,10 +447,10 @@ body.inner .hud, body.inner #hints, body.inner #migCap, body.inner .miglab, body
 @media (max-width: 760px) { .tgrid { gap: 6px; } .tgrp .tourpick { padding: 9px 12px; gap: 2px; display: grid; grid-template-columns: 1fr auto; column-gap: 10px; } .tgrp .tourpick span { grid-column: 1 / -1; } .tgrp .tourpick small { grid-row: 1; grid-column: 2; align-self: center; } .tgrp .tourpick b { font-size: calc(18px * var(--fs)); } }
 @media (min-width: 761px) { #hudBox, .zoo, .innercap, .solcap { max-width: 46vw; }   /* large text: the right-hand panels leave the left side free */
   #hudBox { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 20px); right: max(16px, env(safe-area-inset-right, 0px)); margin: 0; width: min(24rem, calc(100% - 32px)); box-sizing: border-box; align-self: auto; } #hudBox.collapsed { width: auto; margin: 0; } }
-.realmcard { position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 20px); transform: translateX(-50%); z-index: 42; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px 20px 12px; border-radius: 18px; background: var(--panel); color: var(--c); opacity: 0; transition: opacity 0.4s; }
+.realmcard { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 42; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px 26px 16px; border-radius: 22px; background: rgba(4, 7, 16, 0.9); color: var(--c); opacity: 0; transition: opacity 0.4s; }
 .realmcard.on { opacity: 1; }
 .realmcard b { font-family: var(--f-mono); font-size: calc(11px * var(--fs)); font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; }
-.realmcard span { display: flex; gap: 16px; } .realmcard i { display: flex; }
+.realmcard span { display: flex; gap: 22px; } .realmcard i { display: flex; } .realmcard.off { --c: var(--ink-dim) !important; } .realmcard.off span { opacity: 0.55; }   /* switched off: greyed */
 .realmcard.on i { animation: rcIn 0.5s both; } @keyframes rcIn { from { opacity: 0; transform: translateY(6px) scale(0.8); } }
 body.inner #realmCard, body.solar #realmCard { display: none; }
 .you-fig { position: fixed; left: 0; top: 0; pointer-events: none; mix-blend-mode: screen; }
@@ -1948,7 +1948,7 @@ function syncAnimals() {
     chips.innerHTML = Object.entries(REALM_INFO).map(([rk, R]) => { const nm = realmName(rk); return `<button class="toggle chip" style="--c:${R.css}" data-r="${rk}" title="${nm}" aria-label="${nm}">${icon(RI[rk], 20, 'currentColor')}</button>`; }).join('');
     chips.querySelectorAll('button').forEach(b => b.onclick = () => { const rk = b.dataset.r;
       if (!animalsOn) for (const k in realmOn) if (k !== rk) setRealm(k, false);   // animals off: show just this realm
-      if (animalsOn && realmOn[rk]) setRealm(rk, false); else showRealms([rk]); });
+      if (animalsOn && realmOn[rk]) { setRealm(rk, false); flashCard(rk, false); } else showRealms([rk]); });
   }
   chips.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', animalsOn && realmOn[b.dataset.r]));
   let mo = false; try { mo = moreOn; } catch (e) {}   // (set up later in the page)
@@ -2378,7 +2378,7 @@ function goHome() {   // first turn the globe to your place (seen from space), t
 $('tRotate').onclick = () => setRotate(!autoRotate);
 $('tEvents').onclick = () => { showEvents = !showEvents; events.visible = showEvents; $('tEvents').setAttribute('aria-pressed', showEvents); };
 var peopleOn = true;
-$('tPeople').onclick = () => { peopleOn = !peopleOn; $('tPeople').setAttribute('aria-pressed', peopleOn); for (const l of layers) for (const o of l.objs) o.visible = peopleOn; };
+$('tPeople').onclick = e => { peopleOn = !peopleOn; $('tPeople').setAttribute('aria-pressed', peopleOn); for (const l of layers) for (const o of l.objs) o.visible = peopleOn; if (e.isTrusted) flashCard('people', peopleOn); };
 // switched on by hand: the new realms join one after another (people alone for a moment first), each with a card of typical animals,
 // its groups from the fewest to the most numerous
 const REVEAL = { t0: 0, at: {}, end: 0, ph: [], card: null };
@@ -2408,21 +2408,19 @@ function revealTick() {   // the card follows the same clock as the dots
   const dt = performance.now() - REVEAL.t0, q = REVEAL.t0 && REVEAL.ph.find(q => dt >= q.t1 && dt < q.t2), rk = q ? q.rk : null;
   if (rk !== REVEAL.card) { REVEAL.card = rk; realmCard(rk); }
 }
-function realmCard(rk) {   // up to five typical animals of the realm that is joining right now
+const typical = rk => { const rank = id => (TYPICAL.indexOf(id) + 1) || 99; return REALMS.filter(g => g.realm === rk).map(g => g.id).sort((a, b) => rank(a) - rank(b)); };
+function realmCard(rk, off) {   // in the middle: up to five typical members of what is joining (or what you just switched off)
   const c = $('realmCard'); c.classList.remove('on');
-  if (!rk || !animalsOn || !realmOn[rk]) return;
-  const rank = id => (TYPICAL.indexOf(id) + 1) || 99;
-  const ids = REALMS.filter(g => g.realm === rk && groupOn[g.id]).map(g => g.id).sort((a, b) => rank(a) - rank(b)).slice(0, 5);
-  c.style.setProperty('--c', REALM_INFO[rk].css);
-  c.innerHTML = `<b>${realmName(rk)}</b><span>${ids.map((id, i) => `<i style="animation-delay:${0.15 + i * 0.25}s">${icon(id, 34, 'currentColor')}</i>`).join('')}</span>`;
-  c.style.top = '';
-  if (innerWidth <= 760) {   // phones: in the free space between the count (and the animal button) and the panels below
-    const z = $('zoo'), hb = $('hints'), bt = document.querySelector('.bottom');
-    let a = document.querySelector('.hud .top').getBoundingClientRect().bottom, b = bt.offsetParent ? bt.getBoundingClientRect().top : innerHeight;
-    if (!z.hidden && z.classList.contains('collapsed')) a = Math.max(a, z.getBoundingClientRect().bottom); if (!hb.hidden && hb.innerHTML) b = Math.min(b, hb.getBoundingClientRect().top);
-    const h = c.offsetHeight; c.style.top = (b - a >= h + 12 ? (a + b - h) / 2 : Math.max(8, b - h - 6)) + 'px';   // too little room: over the count rather than over the open menu
-  }
+  if (!rk || (!off && rk !== 'people' && (!animalsOn || !realmOn[rk]))) return;
+  const ids = rk === 'people' ? ['person'] : rk === 'animals' ? ANIMAL_REALMS.map(k => typical(k)[0]) : typical(rk).filter(id => off || groupOn[id]).slice(0, 5);
+  const name = rk === 'people' ? T('People', 'Menschen') : rk === 'animals' ? T('Animals', 'Tiere') : realmName(rk);
+  c.style.setProperty('--c', rk === 'people' ? 'var(--glow)' : rk === 'animals' ? 'var(--ink)' : REALM_INFO[rk].css); c.classList.toggle('off', !!off);
+  c.innerHTML = `<b>${name}${off ? T(' · off', ' · aus') : ''}</b><span>${ids.map((id, i) => `<i style="animation-delay:${0.1 + i * 0.2}s">${icon(id, 51, 'currentColor')}</i>`).join('')}</span>`;
   void c.offsetWidth; c.classList.add('on');
+}
+function flashCard(rk, on) {   // a button switched by hand: its card, for a moment (switching on animals brings its own cards, one realm after another)
+  if (tour || (on && REVEAL.t0)) return;
+  realmCard(rk, !on); clearTimeout(REVEAL.ft); REVEAL.ft = setTimeout(() => { if (!REVEAL.t0) realmCard(null); }, 1900);
 }
 function showRealms(ks) {   // switch realms on; the ones not visible yet join one by one
   const add = ks.filter(k => !(animalsOn && realmOn[k])), fresh = !animalsOn;
@@ -2430,7 +2428,7 @@ function showRealms(ks) {   // switch realms on; the ones not visible yet join o
   startReveal(add, fresh); if (!animalsOn) setAnimals(true);
 }
 $('tAnimals').onclick = () => {
-  if (moreOn ? animalsOn && ANIMAL_REALMS.every(k => realmOn[k]) : animalsOn) { setAnimals(false); return; }   // more mode: "All"
+  if (moreOn ? animalsOn && ANIMAL_REALMS.every(k => realmOn[k]) : animalsOn) { setAnimals(false); flashCard('animals', false); return; }   // more mode: "All"
   const ks = Object.keys(realmOn).filter(k => realmOn[k]);
   showRealms(moreOn || !ks.length ? ANIMAL_REALMS : ks);
 };
