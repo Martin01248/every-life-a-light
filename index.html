@@ -172,7 +172,7 @@ body { background: var(--space); color: var(--ink); font-family: var(--f-body); 
 .dot.b { background: var(--birth); box-shadow: 0 0 8px var(--birth); }
 .dot.d { background: var(--death); box-shadow: 0 0 8px var(--death); }
 
-.bottom { display: flex; gap: 12px; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; }
+.bottom { display: flex; gap: 12px; align-items: flex-end; justify-content: center; flex-wrap: wrap; }   /* the controls: centred at the bottom edge */
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 14px 16px; }
 .controls { display: flex; flex-direction: column; gap: 10px; max-width: 46rem; }
 .label { font-family: var(--f-mono); font-size: calc(10.5px * var(--fs)); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); }
@@ -295,13 +295,13 @@ body.touring .overlay:not(#tourMenu) { padding-bottom: 230px; }
 .controls, .tourrow { --b: calc(1.5 * var(--fs)); }   /* the buttons of the menu and of the tours: half as big again (and they grow with the text size) */
 .controls .btn, .controls .toggle, .tourrow .btn, .tourrow .toggle { font-size: calc(12px * var(--b)); padding: 10px 18px; border-width: 1.5px; }
 .controls .icon, .tourrow .icon { padding: 9px 10px; } .controls .icon .ico, .tourrow .icon .ico { width: calc(18px * var(--b)); height: calc(18px * var(--b)); }
-.controls .row { gap: 9px; } .row.main { gap: 8px; } .row.main .gap { margin-left: 6px; }   /* one row: find me + tour · people + animals · sound, text size, reset, more */
+.controls .row { gap: 9px; } .row.main { gap: 8px; } .controls.compact .row.main { justify-content: center; } .row.main .gap { margin-left: 6px; }   /* one row: find me + tour · people + animals · sound, reset, more */
 .row.main .brk { display: none; } @media (max-width: 560px) { .row.main { row-gap: 4px; } .row.main .brk { display: block; flex-basis: 100%; height: 0; } .row.main .brk + .gap { margin-left: 0; } .controls:not(.compact) { padding: 10px; } }   /* phones: two rows of four */
 .btn.primary { color: var(--space); background: var(--glow); border-color: var(--glow); }
 .btn.primary.first { animation: invite 2.4s ease-in-out infinite; }
 @keyframes invite { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 195, 107, 0); } 50% { box-shadow: 0 0 0 6px rgba(255, 195, 107, 0.22); } }
 @media (prefers-reduced-motion: reduce) { .btn.primary.first { animation: none; } }
-.ctlcol { display: flex; flex-direction: column; align-items: flex-start; }   /* holds the controls, so they can scroll when there is too little room */
+.ctlcol { display: flex; flex-direction: column; align-items: center; }   /* holds the controls, so they can scroll when there is too little room */
 .bottom, .ctlcol, #ctlPanel { min-height: 0; } .ctlcol { max-height: 100%; } #ctlPanel { overflow-y: auto; }   /* too little room (large text, small screen): the controls scroll */
 .scale2 { font-family: var(--f-mono); font-size: calc(12px * var(--fs)); color: #c9d0de; margin-top: 2px; } .antotal b, .inview b { color: var(--ink); font-weight: 600; font-size: calc(13px * var(--fs)); } .hudbox .scale2 { margin: 0 0 4px; } .antotal span { color: var(--ink-dim); } .scale2 .ico { vertical-align: -3px; }
 .zoo > .colbtn, .homebox > .colbtn { position: sticky; top: 0; align-self: flex-end; margin: -6px -6px -30px 0; flex: none; }
@@ -441,7 +441,7 @@ body.inner .hud, body.inner #hints, body.inner #migCap, body.inner .miglab, body
 #feelPanel { display: none !important; }
 #moreBox [hidden], #hintShort { display: none !important; }
 #realmChips { display: inline-flex; flex-wrap: wrap; gap: 6px; } #realmChips .chip { padding: 0; width: calc(32px * var(--b)); height: calc(32px * var(--b)); display: inline-flex; align-items: center; justify-content: center; } #realmChips .chip .ico { color: var(--c) !important; } #realmChips .chip[aria-pressed="true"] .ico { color: var(--space) !important; }   /* offered in the tours and in the animal box instead */
-.controls.compact { align-self: flex-start; padding: 0; background: none; border-color: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }   /* the small menu: just the buttons, no box */
+.controls.compact { align-self: center; padding: 0; background: none; border-color: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }   /* the small menu: just the buttons, no box */
 .controls.compact .toggle:not([aria-pressed="true"]), .controls.compact .btn:not(.you):not(.primary) { background: rgba(8, 12, 22, 0.66); }
 @media (max-width: 760px) { .tgrid { gap: 6px; } .tgrp .tourpick { padding: 9px 12px; gap: 2px; display: grid; grid-template-columns: 1fr auto; column-gap: 10px; } .tgrp .tourpick span { grid-column: 1 / -1; } .tgrp .tourpick small { grid-row: 1; grid-column: 2; align-self: center; } .tgrp .tourpick b { font-size: calc(18px * var(--fs)); } }
 @media (min-width: 761px) { #hudBox, .zoo, .innercap, .solcap { max-width: 46vw; }   /* large text: the right-hand panels leave the left side free */
@@ -553,9 +553,9 @@ body.inner #realmCard, body.solar #realmCard { display: none; }
     <span class="eyebrow" id="eyebrow">People alive · estimate</span>
     <div class="count" id="count">8,3…</div>
     <div class="scale" id="scale"><span id="lightWord">1 light</span> = <b id="perLight">…</b></div>
+    <section class="panel hudbox" id="hudBox" aria-label="Details">
     <div class="scale2 inview" id="inView">…</div>
     <div class="scale2 antotal" id="anTotal" hidden></div>
-    <section class="panel hudbox" id="hudBox" aria-label="Details">
     <div class="scale2" id="anScale" hidden></div>
     <div class="scale2 ruler off" id="ruler" aria-hidden="true"></div>
     <div class="meta"><span id="alt">…</span><span id="busy" class="busy" hidden>placing people…</span></div>
@@ -578,7 +578,6 @@ body.inner #realmCard, body.solar #realmCard { display: none; }
         <button class="toggle icon gap" id="tPeople" aria-pressed="true"></button>
         <button class="toggle icon" id="tAnimals" aria-pressed="false"></button><span class="brk"></span>
         <button class="toggle icon gap" id="tSound" aria-pressed="false"></button>
-        <button class="toggle icon" id="fsBtn" aria-pressed="false"></button>
         <button class="btn icon" id="resetBtn"></button>
         <button class="toggle icon" id="moreBtn" aria-pressed="false" aria-controls="moreBox"></button>
       </div>
@@ -612,6 +611,7 @@ body.inner #realmCard, body.solar #realmCard { display: none; }
         <span class="label grp" id="grpSet">Settings</span>
         <div class="row">
           <button class="btn" id="langBtn">DE</button>
+          <button class="toggle icon" id="fsBtn" aria-pressed="false"></button>
           <button class="btn" id="openGfx"><span id="gfxWord">Graphics</span>: <span id="gfxName">High</span></button>
         </div>
         <p class="disc"><button class="linkbtn" id="discBtn">AI-generated · an approximation · no liability</button> · <button class="linkbtn" id="srcBtn">Sources &amp; licences</button></p>
