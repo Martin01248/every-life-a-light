@@ -235,7 +235,7 @@ button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .gfxgrid select { font-family: var(--f-mono); font-size: calc(12px * var(--fs)); background: #0b1220; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; }
 .gfxgrid select:disabled { opacity: 0.55; }
 .gunlock { font-size: calc(13px * var(--fs)); color: var(--ink-dim); display: flex; gap: 8px; align-items: center; }
-.timeRow { display: grid; grid-template-columns: auto 1fr 5.5em; gap: 10px; align-items: center; }
+.timeRow { display: grid; grid-template-columns: auto 1fr 5.5em auto; gap: 10px; align-items: center; } .timecap { width: min(34rem, calc(100vw - 32px)); box-sizing: border-box; margin-bottom: 10px; }   /* time travel: above the controls */
 .timeRow input { width: 100%; accent-color: var(--glow); }
 .timeRow #yearLabel { font-family: var(--f-display); font-size: 20px; color: var(--glow); text-align: right; font-variant-numeric: tabular-nums; }
 .toggle.ghost[aria-pressed="true"] { color: var(--space); background: #b9a9ff; border-color: #b9a9ff; }
@@ -312,7 +312,7 @@ body.touring .overlay:not(#tourMenu) { padding-bottom: 230px; }
 .depthsheet { width: min(860px, 100%); }
 .dwrap { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 18px; align-items: start; }
 .dchart { position: relative; max-width: 360px; } .dpin { position: absolute; transform: translate(-50%, -50%); filter: drop-shadow(0 0 4px #000); } .dpin.line { left: 0; right: 0; height: 1px; transform: none; background: rgba(255, 210, 160, 0.35); }
-@media (max-width: 760px) { .dwrap { grid-template-columns: 1fr; } .zoo { max-height: 55vh; } .antotal span { display: none; } .zoo:not(.collapsed) > .colbtn, .homebox:not(.collapsed) > .colbtn { min-width: 40px; height: 36px; font-size: calc(16px * var(--fs)); } }
+@media (max-width: 760px) { .dwrap { grid-template-columns: 1fr; } .zoo { max-height: 55vh; } .zoo:not(.collapsed) > .colbtn, .homebox:not(.collapsed) > .colbtn { min-width: 40px; height: 36px; font-size: calc(16px * var(--fs)); } }
 .gfxtoast { position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 16px); transform: translateX(-50%); z-index: 70; max-width: min(30rem, calc(100% - 32px)); font-size: calc(13px * var(--fs)); color: #d6dbe6; padding: 10px 14px !important; }
 .sollab { position: fixed; left: 0; top: 0; pointer-events: none; white-space: nowrap; font-family: var(--f-mono); font-size: calc(11.5px * var(--fs)); color: rgba(238, 241, 247, 0.85); text-shadow: 0 0 6px #000; }
 .sollab.home { color: var(--you); font-weight: 500; }
@@ -390,6 +390,7 @@ body.touring #solCap, body.solar .city, body.solar .ctry, body.solar .latlab, bo
 .hints .hx { pointer-events: auto; flex: none; font-family: var(--f-mono); font-size: calc(12px * var(--fs)); color: var(--ink-dim); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; width: 30px; height: 30px; cursor: pointer; padding: 0; }
 @keyframes hnIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .antotal i { display: block; font-style: normal; color: #ffc36b; }
+.inview .ico, .antotal .ico { width: calc(16px * var(--fs)); height: calc(16px * var(--fs)); vertical-align: -3px; margin-right: 6px; }   /* people and animals in view: the symbols of their buttons */
 
 .ruler { transition: opacity .6s; } .ruler.off { opacity: 0; }
 .ruler b { color: var(--ink); font-weight: 500; }
@@ -544,7 +545,6 @@ body.inner #realmCard, body.solar #realmCard { display: none; }
   <div id="realms"></div>
   <p class="foot" id="zooView"></p>
   <p class="foot" id="zooBeat"></p>
-  <div class="row"><button class="btn" id="openDepth">How deep do they live?</button><button class="btn soilbtn" id="openSoil">Look into 10 × 10 cm of soil here</button><button class="btn" id="openCompare2">Compare the numbers</button></div>
 </section>
 <div class="loading" id="loading">Placing 8 billion people…</div>
 
@@ -553,9 +553,10 @@ body.inner #realmCard, body.solar #realmCard { display: none; }
     <span class="eyebrow" id="eyebrow">People alive · estimate</span>
     <div class="count" id="count">8,3…</div>
     <div class="scale" id="scale"><span id="lightWord">1 light</span> = <b id="perLight">…</b></div>
-    <section class="panel hudbox" id="hudBox" aria-label="Details">
     <div class="scale2 inview" id="inView">…</div>
     <div class="scale2 antotal" id="anTotal" hidden></div>
+    <section class="panel hudbox" id="hudBox" aria-label="Details">
+    <div class="scale2" id="perPerson" hidden></div>
     <div class="scale2" id="anScale" hidden></div>
     <div class="scale2 ruler off" id="ruler" aria-hidden="true"></div>
     <div class="meta"><span id="alt">…</span><span id="busy" class="busy" hidden>placing people…</span></div>
@@ -571,6 +572,7 @@ body.inner #realmCard, body.solar #realmCard { display: none; }
 
   <div class="bottom">
     <div class="ctlcol">
+    <section class="panel timeRow timecap" id="timeCap" hidden><label class="label" for="yearSlider" id="yearWord">Year</label><input type="range" id="yearSlider" min="0" max="26" step="1" value="26"><span id="yearLabel">Today</span><button class="x" id="timeClose" aria-label="Close">✕</button></section>
     <section class="panel controls" id="ctlPanel" aria-label="Navigation">
       <div class="row main">
         <button class="btn you icon" id="findMe"></button>
@@ -584,14 +586,13 @@ body.inner #realmCard, body.solar #realmCard { display: none; }
       <p class="hint" style="margin:0" id="hintShort">Zoom with the scroll wheel or two fingers until one light is one person. Click anywhere to see what lives there.</p>
       <div id="moreBox" hidden>
         <span class="label grp" id="grpBeings">Living beings</span>
-        <div class="row"><span class="chips" id="realmChips"></span><button class="btn" id="openCompare" hidden>Compare the numbers</button></div>
+        <div class="row"><span class="chips" id="realmChips"></span></div>
         <span class="label grp" id="grpView">View</span>
         <div class="row">
           <button class="toggle" id="tRotate" aria-pressed="true">Rotate</button>
           <button class="toggle" id="tCities" aria-pressed="false">Cities</button>
           <button class="toggle" id="tCountries" aria-pressed="true">Countries</button>
           <button class="toggle" id="tBorders" aria-pressed="false">Borders</button>
-          <button class="toggle" id="tHeight" aria-pressed="false" hidden>Population as height</button>
         </div>
         <span class="label grp" id="grpTrips" hidden>Journeys</span>
         <div class="row" hidden>
@@ -606,8 +607,6 @@ body.inner #realmCard, body.solar #realmCard { display: none; }
           <button class="btn" id="tAlone" hidden>Only you</button>
           <button class="toggle" id="tMig" aria-pressed="false">Migrations</button>
         </div>
-        <span class="label grp" id="grpTime" hidden>Time</span>
-        <div class="timeRow" hidden><label class="label" for="yearSlider" id="yearWord">Year</label><input type="range" id="yearSlider" min="0" max="26" step="1" value="26"><span id="yearLabel">Today</span></div>
         <span class="label grp" id="grpSet">Settings</span>
         <div class="row">
           <button class="btn" id="langBtn">DE</button>
@@ -1066,7 +1065,7 @@ let LANG = (() => { try { const s = localStorage.getItem('ebl-lang'); if (s === 
 const LOC = () => LANG === 'de' ? 'de-DE' : 'en-US';
 const lc = s => LANG === 'de' ? s.replace(/^(Wilde|Andere|Alle|Antarktischer|Einzellige)\b/, w => w.toLowerCase()) : s.toLowerCase();
 const dec = (x, d) => x.toLocaleString(LOC(), { minimumFractionDigits: d, maximumFractionDigits: d });
-function pname(p) { return LANG === 'de' ? ({ 'Very low': 'Sehr niedrig', Low: 'Niedrig', Medium: 'Mittel', High: 'Hoch', 'Very high': 'Sehr hoch' })[p] || p : p; }
+function pname(p) { return LANG === 'de' ? ({ Lowest: 'Niedrigste', 'Very low': 'Sehr niedrig', Low: 'Niedrig', Medium: 'Mittel', High: 'Hoch', 'Very high': 'Sehr hoch' })[p] || p : p; }
 // ================= small drawings of each group, so you see at once which animals are meant =================
 const F = 'fill="currentColor" fill-opacity=".35"';
 const ICONS = {
@@ -1121,6 +1120,7 @@ ICONS.reset = `<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 3.8v4.6h4.
 ICONS.prev = `<path d="M14.5 5.5 8 12l6.5 6.5"/>`; ICONS.next = `<path d="M9.5 5.5 16 12l-6.5 6.5"/>`;
 ICONS.pause = `<path d="M9 6v12M15 6v12" stroke-width="2.4"/>`; ICONS.play = `<path d="M8.5 5.8v12.4L18.5 12z" fill="currentColor"/>`;
 ICONS.close = `<path d="M6.5 6.5l11 11m0-11-11 11"/>`; ICONS.check = `<path d="M5.5 12.5l4.2 4.2L18.5 7.5"/>`;
+ICONS.explore = `<circle cx="10.5" cy="10.5" r="6" ${F}/><path d="M15 15l5.5 5.5"/>`;
 ICONS.sliders = `<path d="M3 6h11M18 6h3M3 12h4M11 12h10M3 18h13M20 18h1"/><circle cx="16" cy="6" r="2" ${F}/><circle cx="9" cy="12" r="2" ${F}/><circle cx="18" cy="18" r="2" ${F}/>`;
 const ICON_ALIAS = {};
 function iconBtn(id, ic, label) { const b = $(id); b.innerHTML = icon(ic, 18, 'currentColor'); b.title = label; b.setAttribute('aria-label', label); return b; }   // a button with just a symbol; the name is its tooltip
@@ -1153,7 +1153,7 @@ const ER = 6371;                     // km
 
 // ---------- renderer ----------
 const canvas = $('scene');
-const AA0 = (() => { try { const s = JSON.parse(localStorage.getItem('ebl-gfx') || 'null'); if (!s) return true; return s.custom ? s.aa !== 0 : !(s.preset === 'Very low' || s.preset === 'Low'); } catch (e) { return true; } })();
+const AA0 = (() => { try { const s = JSON.parse(localStorage.getItem('ebl-gfx') || 'null'); if (!s) return true; return s.custom ? s.aa !== 0 : !['Lowest', 'Very low', 'Low'].includes(s.preset); } catch (e) { return true; } })();
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: AA0, powerPreference: 'high-performance' }); renderer.autoClear = false;
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setClearColor(0x02040a, 1);
@@ -1527,7 +1527,8 @@ function onWorker(e) {
   stats.perLight = perLight; stats.inView = V;
   $('perLight').textContent = perLight === 1 ? T('1 person', '1 Mensch') : fmt(perLight) + T(' people', ' Menschen');
   $('scale').classList.toggle('one', perLight === 1);
-  $('inView').innerHTML = T('People in view: ', 'Menschen im Bild: ') + '<b>≈ ' + (V >= 1e9 ? dec(V / 1e9, 2) + T(' billion', ' Milliarden') : V >= 1e6 ? dec(V / 1e6, 1) + T(' million', ' Millionen') : fmt(V)) + '</b>';
+  $('inView').innerHTML = icon('person', 16, 'currentColor') + '<b>≈ ' + (V >= 1e9 ? dec(V / 1e9, 2) + T(' billion', ' Milliarden') : V >= 1e6 ? dec(V / 1e6, 1) + T(' million', ' Millionen') : fmt(V)) + '</b>';   // the same symbol as the people button
+  $('inView').title = T('People in view', 'Menschen im Bild'); $('inView').setAttribute('aria-label', $('inView').title + ': ' + $('inView').textContent);
   $('busy').hidden = true; $('loading').hidden = true;
   if (feelIdx === 0) renderFeel();
 }
@@ -1978,21 +1979,22 @@ function viewAreas() {
   return { land, sea, S };
 }
 function updateZooView() {
-  if (!animalsOn) { $('anTotal').hidden = true; return; }
+  if (!animalsOn) { $('anTotal').hidden = true; $('perPerson').hidden = true; return; }
   const { land, sea, S } = viewAreas();
   lastS = S; renderAnTotal(); zooText(land, sea, S);
 }
 let lastS = null;
-function renderAnTotal() {
+function renderAnTotal() {   // the animals in view (the dog, as on the button), the group joining right now, and in Details how many per person
   const S = lastS; if (!S || !animalsOn) return;
-  { let tot = peopleOn ? stats.inView || 0 : 0, n = 0, newest = -1; for (let r = 0; r < NR; r++) if (rOn(r) && REALMS[r].kind !== 4 && !G[REALMS[r].id].unit) { const f = revealF(r); if (f <= 0) continue; tot += S[r] * f; n++; if (REVEAL.t0 && REVEAL.at[r] != null && (newest < 0 || REVEAL.at[r] > REVEAL.at[newest])) newest = r; }
-    const el = $('anTotal'); el.hidden = !(tot >= 1);
-    el.title = T('People plus every animal group you have switched on, in the part of the Earth you see, for the chosen year. Plants and fungi are counted by weight, so they are not in this number.', 'Menschen plus alle eingeschalteten Tiergruppen im sichtbaren Teil der Erde, für das gewählte Jahr. Pflanzen und Pilze werden nach Gewicht gezählt und sind daher nicht enthalten.');
-    el.innerHTML = T(`Living beings in view: <b>≈ ${fmtBig(tot)}</b>`, `Lebewesen im Bild: <b>≈ ${fmtBig(tot)}</b>`); el.title += T(` (${peopleOn ? 'people + ' : ''}${n} animal groups)`, ` (${peopleOn ? 'Menschen + ' : ''}${n} Tiergruppen)`);
-    const ppl = stats.inView || 0, an = tot - (peopleOn ? ppl : 0);
-    if (peopleOn && ppl >= 1 && an >= 1) el.innerHTML += T(`<i>≈ ${an / ppl >= 10 ? fmtBig(an / ppl) : fmt(Math.round(an / ppl))} animals for every person here</i>`, `<i>≈ ${an / ppl >= 10 ? fmtBig(an / ppl) : fmt(Math.round(an / ppl))} Tiere pro Mensch hier</i>`);
-    else if (an >= 1 && ppl < 1) el.innerHTML += T('<i>and not a single person</i>', '<i>und kein einziger Mensch</i>');
-    if (REVEAL.t0) { el.hidden = false; const ii = el.querySelector('i'), txt = newest < 0 ? T('first only the people…', 'zuerst nur die Menschen …') : '+ ' + G[REALMS[newest].id].name; if (ii) ii.textContent = txt; else el.innerHTML += `<i>${txt}</i>`; } }
+  let an = 0, n = 0, newest = -1;
+  for (let r = 0; r < NR; r++) if (rOn(r) && REALMS[r].kind !== 4 && !G[REALMS[r].id].unit) { const f = revealF(r); if (f <= 0) continue; an += S[r] * f; n++; if (REVEAL.t0 && REVEAL.at[r] != null && (newest < 0 || REVEAL.at[r] > REVEAL.at[newest])) newest = r; }
+  const el = $('anTotal'), ppl = peopleOn ? stats.inView || 0 : 0;
+  el.hidden = !(an >= 1 || REVEAL.t0);
+  el.title = T(`Animals in view: the ${n} animal groups you have switched on, in the part of the Earth you see. Plants and fungi are counted by weight, so they are not in this number.`, `Tiere im Bild: die ${n} eingeschalteten Tiergruppen im sichtbaren Teil der Erde. Pflanzen und Pilze werden nach Gewicht gezählt und sind daher nicht enthalten.`);
+  el.innerHTML = icon('dogs', 16, 'currentColor') + `<b>≈ ${an >= 1 ? fmtBig(an) : 0}</b>` + (REVEAL.t0 ? `<i>${newest < 0 ? T('first only the people…', 'zuerst nur die Menschen …') : '+ ' + G[REALMS[newest].id].name}</i>` : '');
+  el.setAttribute('aria-label', T('Animals in view', 'Tiere im Bild') + ': ' + el.textContent);
+  const pp = $('perPerson'), k = an / Math.max(1, ppl); pp.hidden = !(ppl >= 1 && an >= 1);
+  if (!pp.hidden) pp.innerHTML = T(`<b>≈ ${k >= 10 ? fmtBig(k) : fmt(Math.round(k))}</b> animals for every person in view`, `<b>≈ ${k >= 10 ? fmtBig(k) : fmt(Math.round(k))}</b> Tiere pro Mensch im Bild`);
 }
 function zooText(land, sea, S) {
   const area = a => a >= 1 ? fmtBig(a) + ' km²' : fmt(a * 1e6) + ' m²';
@@ -2152,7 +2154,6 @@ function cmpShow(i) {
 }
 function openCompare() { $('cmp').hidden = false; cmpScale = null; setCmpMode('number'); cmpShow(0); $('cmpNext').focus(); }
 $('modeNum').onclick = () => setCmpMode('number'); $('modeWt').onclick = () => setCmpMode('weight');
-$('openCompare').onclick = openCompare; $('openCompare2').onclick = openCompare;
 $('cmpClose').onclick = () => { $('cmp').hidden = true; cancelAnimationFrame(cmpRaf); };
 $('cmpPrev').onclick = () => cmpShow(cmpIdx - 1); $('cmpNext').onclick = () => cmpShow(cmpIdx + 1);
 addEventListener('resize', () => { if (!$('cmp').hidden) drawCompare(cmpScale); });
@@ -2261,26 +2262,26 @@ function startSoil(nN, nS, nI, nA) {
   };
   soilRaf = requestAnimationFrame(step);
 }
-$('openSoil').onclick = openSoil;
 $('soilClose').onclick = () => { $('soil').hidden = true; cancelAnimationFrame(soilRaf); };
 addEventListener('keydown', e => { if (e.key === 'Escape') { $('soil').hidden = true; $('cmp').hidden = true; cancelAnimationFrame(soilRaf); cancelAnimationFrame(cmpRaf); } });
 
 // ---------- graphics settings ----------
 const DPR = Math.min(devicePixelRatio || 1, 2);
 const GFX_OPTS = [
-  { k: 'pr', label: 'Render resolution', hint: 'pixels drawn per screen point', opts: [[0.75, '0.75×'], [1, '1×'], [1.25, '1.25×'], [1.5, '1.5×'], [2, '2× (Retina)']] },
-  { k: 'people', label: 'People lights', hint: 'most lights drawn at once', opts: [[300000, '0.3 million'], [600000, '0.6 million'], [1300000, '1.3 million'], [2600000, '2.6 million'], [4000000, '4 million']] },
-  { k: 'animals', label: 'Animal dots per group', hint: 'with all groups on, times about 35', opts: [[10000, '10,000'], [20000, '20,000'], [35000, '35,000'], [60000, '60,000'], [100000, '100,000']] },
-  { k: 'refresh', label: 'Refresh while moving', hint: 'how often new lights are placed', opts: [[3500, 'every 3.5 s'], [2500, 'every 2.5 s'], [1800, 'every 1.8 s'], [1400, 'every 1.4 s'], [900, 'every 0.9 s']] },
-  { k: 'mesh', label: 'Globe smoothness', hint: 'triangles of the Earth sphere', opts: [[64, 'very low'], [96, 'low'], [160, 'medium'], [256, 'high'], [360, 'very high']] },
-  { k: 'tex', label: 'Map detail', hint: 'size of the coastline map', opts: [[2048, '2048 px'], [4096, '4096 px'], [8192, '8192 px']] },
-  { k: 'labels', label: 'City names shown', hint: 'at most', opts: [[15, '15'], [25, '25'], [45, '45'], [70, '70'], [110, '110']] },
+  { k: 'pr', label: 'Render resolution', hint: 'pixels drawn per screen point', opts: [[0.5, '0.5×'], [0.75, '0.75×'], [1, '1×'], [1.25, '1.25×'], [1.5, '1.5×'], [2, '2× (Retina)']] },
+  { k: 'people', label: 'People lights', hint: 'most lights drawn at once', opts: [[150000, '0.15 million'], [300000, '0.3 million'], [600000, '0.6 million'], [1300000, '1.3 million'], [2600000, '2.6 million'], [4000000, '4 million']] },
+  { k: 'animals', label: 'Animal dots per group', hint: 'with all groups on, times about 35', opts: [[5000, '5,000'], [10000, '10,000'], [20000, '20,000'], [35000, '35,000'], [60000, '60,000'], [100000, '100,000']] },
+  { k: 'refresh', label: 'Refresh while moving', hint: 'how often new lights are placed', opts: [[5000, 'every 5 s'], [3500, 'every 3.5 s'], [2500, 'every 2.5 s'], [1800, 'every 1.8 s'], [1400, 'every 1.4 s'], [900, 'every 0.9 s']] },
+  { k: 'mesh', label: 'Globe smoothness', hint: 'triangles of the Earth sphere', opts: [[48, 'lowest'], [64, 'very low'], [96, 'low'], [160, 'medium'], [256, 'high'], [360, 'very high']] },
+  { k: 'tex', label: 'Map detail', hint: 'size of the coastline map', opts: [[1024, '1024 px'], [2048, '2048 px'], [4096, '4096 px'], [8192, '8192 px']] },
+  { k: 'labels', label: 'City names shown', hint: 'at most', opts: [[10, '10'], [15, '15'], [25, '25'], [45, '45'], [70, '70'], [110, '110']] },
   { k: 'stars', label: 'Stars', hint: 'background stars', opts: [[0, 'off'], [1, 'on']] },
   { k: 'motion', label: 'Animal motion', hint: 'drifting birds and swaying sea life', opts: [[0, 'off'], [1, 'on']] },
   { k: 'aa', label: 'Edge smoothing', hint: 'antialiasing; applies after reloading the page', opts: [[0, 'off'], [1, 'on']] },
   { k: 'fps', label: 'Frame rate', hint: 'cap', opts: [[30, '30 fps'], [60, 'screen rate']] },
 ];
 const GFX_PRESETS = {
+  Lowest:      { pr: 0.5, aa: 0, people: 150000, animals: 5000, refresh: 5000, mesh: 48, tex: 1024, labels: 10, stars: 0, motion: 0, fps: 30 },   // for weak phones: the least that still shows everything
   'Very low':  { pr: 0.75, aa: 0, people: 300000, animals: 10000, refresh: 3500, mesh: 64, tex: 2048, labels: 15, stars: 0, motion: 0, fps: 30 },
   Low:         { pr: 1, aa: 0, people: 600000, animals: 20000, refresh: 2500, mesh: 96, tex: 2048, labels: 25, stars: 0, motion: 0, fps: 30 },
   Medium:      { pr: Math.min(1.25, DPR), aa: 1, people: 1300000, animals: 35000, refresh: 1800, mesh: 160, tex: 4096, labels: 45, stars: 1, motion: 1, fps: 60 },
@@ -2293,8 +2294,8 @@ function detectGfx() {
   const cores = navigator.hardwareConcurrency || 0, mem = navigator.deviceMemory || 0;
   const mobile = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent) || (matchMedia('(pointer: coarse)').matches && !matchMedia('(pointer: fine)').matches);
   let p = 'Low';
-  if (/SwiftShader|llvmpipe|softpipe|Software|Basic Render|Microsoft Basic/i.test(r)) p = 'Very low';
-  else if (mobile) p = (mem && mem <= 3) || (cores && cores <= 4) ? 'Very low' : 'Low';
+  if (/SwiftShader|llvmpipe|softpipe|Software|Basic Render|Microsoft Basic/i.test(r)) p = 'Lowest';   // no graphics chip at all
+  else if (mobile) p = mem && mem <= 2 ? 'Lowest' : (mem && mem <= 3) || (cores && cores <= 4) ? 'Very low' : 'Low';
   else if (/Apple M\d|NVIDIA|GeForce|RTX|Quadro|Radeon RX|Radeon Pro/i.test(r)) p = cores >= 8 ? 'High' : 'Medium';
   else if (/Apple GPU/i.test(r)) p = cores >= 8 ? 'Medium' : 'Low';   // Safari hides which Mac it is: stay careful
   else if (/Intel|Iris|UHD|AMD|Radeon/i.test(r)) p = cores >= 8 && (!mem || mem >= 8) ? 'Medium' : 'Low';
@@ -2434,6 +2435,8 @@ $('tAnimals').onclick = () => {
   showRealms(moreOn || !ks.length ? ANIMAL_REALMS : ks);
 };
 $('yearSlider').oninput = e => setYear(STOPS[+e.target.value]);
+function openTime(on) { $('timeCap').hidden = !on; if (!on) setYearIdx(STOPS.length - 1); }   // closing it returns to today
+$('timeClose').onclick = () => openTime(false);
 $('tCities').onclick = () => { citiesOn = !citiesOn; $('tCities').setAttribute('aria-pressed', citiesOn); };
 $('findMe').onclick = () => { feelIdx = FEEL.length - 1; renderFeel(false); goHome(); };
 if (reduceMotion) setRotate(false);
@@ -3000,7 +3003,7 @@ function tourSet(s) {
   if (s.realms) Object.keys(realmOn).forEach(k => { realmOn[k] = s.realms.includes(k); });
   if (s.animals != null && animalsOn !== s.animals) setAnimals(s.animals); else if (s.realms) syncAnimals();
   if (s.year != null) setYearIdx(yearIdx(s.year));
-  if (s.height != null && heightOn !== s.height && !$('tHeight').hidden) $('tHeight').click();
+  if (s.height != null) heightOn = !!s.height;   // the places rise as high as people live densely there
 }
 function renderTourCap() {
   if (!tour) return; const L = TOURS[tour.id].steps, s = L[tour.i];
@@ -3068,8 +3071,8 @@ function stepTour(now) {
 }
 // tour menu
 function openTourMenu() {
-  $('tourMenuTitle').textContent = T('Guided tours', 'Geführte Touren');
-  $('tourMenuLead').textContent = T('Sit back: each tour flies by itself. You can pause, go back, change the speed or stop at any time.', 'Lehn dich zurück: Jede Tour fliegt von selbst. Du kannst jederzeit pausieren, zurückgehen, das Tempo ändern oder aufhören.');
+  $('tourMenuTitle').textContent = T('Tours and exploring', 'Touren und Entdecken');
+  $('tourMenuLead').textContent = T('Sit back: each tour flies by itself, and you can pause, go back or stop at any time. At the bottom: things to explore yourself.', 'Lehn dich zurück: Jede Tour fliegt von selbst, du kannst jederzeit pausieren, zurückgehen oder aufhören. Ganz unten: Dinge zum selbst Entdecken.');
   $('tourSpeedRow').innerHTML = `<span class="label">${T('Speed', 'Tempo')}</span>` + SPEEDS.map(([v, n]) => `<button class="toggle" data-v="${v}" aria-pressed="${v === tourSpeed}">${n()}</button>`).join('');
   $('tourSpeedRow').querySelectorAll('button').forEach(b => b.onclick = () => { setTourSpeed(+b.dataset.v); openTourMenu(); });
   // grouped by what each tour is about; one short line each, so the right one is easy to find
@@ -3090,14 +3093,26 @@ function openTourMenu() {
       ['outer', T('From the Sun to the edge of everything measured.', 'Von der Sonne bis an den Rand des Gemessenen.')],
       ['inner', T('Into a person, down to the smallest particles.', 'In einen Menschen hinein, bis zu den kleinsten Teilchen.')],
       ['cosmos', T('Sun, Venus, Mars, Moon: why life is right here.', 'Sonne, Venus, Mars, Mond: warum Leben gerade hier ist.')]] },
+    { icon: ['explore', 'var(--you)'], t: T('Explore yourself', 'Selbst entdecken'), d: T('no tour: you steer', 'ohne Tour: du steuerst'), tools: true, items: Object.keys(TOOLS).map(k => [k, TOOLS[k][1]()]) },
   ];
   const title = id => id === 'whole' ? T('The whole journey', 'Die ganze Reise') : id === 'inner' ? T('Journey inward', 'Reise nach innen') : id === 'outer' ? T('Journey outward', 'Reise nach außen') : TOURS[id].t();
-  $('tourList').innerHTML = TG.map(g => `<section class="tgrp"><h3>${icon(g.icon[0], 20, g.icon[1])}<span>${g.t}</span><em>${g.d}</em></h3><div class="tgrid">${g.items.map(([id, d, badge]) =>
+  $('tourList').innerHTML = TG.map(g => `<section class="tgrp"><h3>${icon(g.icon[0], 20, g.icon[1])}<span>${g.t}</span><em>${g.d}</em></h3><div class="tgrid">${g.items.map(([id, d, badge]) => g.tools ?
+    `<button class="tourpick" data-tool="${id}"><b>${TOOLS[id][0]()}</b><span>${d}</span></button>` :
     `<button class="tourpick" data-id="${id}"><b>${title(id)}${badge ? `<i class="tbadge">${badge}</i>` : ''}</b><span>${d}</span><small>${Math.max(1, Math.round((LEN[id] ? LEN[id]() : tourLen(id)) / 60))} min</small></button>`).join('')}</div></section>`).join('');
-  $('tourList').querySelectorAll('button').forEach(b => b.onclick = () => b.dataset.id === 'whole' ? startGrand() : b.dataset.id === 'inner' ? enterInner(true) : b.dataset.id === 'outer' ? enterOuter(true, 0) : startTour(b.dataset.id));
+  $('tourList').querySelectorAll('button').forEach(b => b.onclick = () => b.dataset.tool ? (closeTourMenu(), TOOLS[b.dataset.tool][2]()) : b.dataset.id === 'whole' ? startGrand() : b.dataset.id === 'inner' ? enterInner(true) : b.dataset.id === 'outer' ? enterOuter(true, 0) : startTour(b.dataset.id));
   $('tourMenu').hidden = false;
 }
 function closeTourMenu() { $('tourMenu').hidden = true; }
+// things to explore yourself, from the tour menu: [name, one sentence, open]
+const TOOLS = {
+  compare: [() => T('Compare the numbers', 'Zahlen vergleichen'), () => T('Every living thing as a grain of sand, side by side; then by weight.', 'Alle Lebewesen als Sandkörner nebeneinander, dann nach Gewicht.'), () => openCompare()],
+  depth: [() => T('How deep do they live?', 'Wie tief leben sie?'), () => T('From the surface down to the Mariana Trench.', 'Von der Oberfläche bis in den Marianengraben.'), () => openDepth()],
+  soil: [() => T('10 × 10 cm of soil', '10 × 10 cm Boden'), () => T('What lives in a little patch of ground where you are looking.', 'Was in einem kleinen Stück Boden lebt, dort wo du hinschaust.'), () => openSoil()],
+  time: [() => T('Travel in time', 'Zeitreise'), () => T('A slider from 10,000 BC to today: where people lived.', 'Ein Regler von 10.000 v. Chr. bis heute: wo Menschen lebten.'), () => openTime(true)],
+  solar: [() => T('Solar system', 'Sonnensystem'), () => T('The Earth among the planets; zoom in to come back.', 'Die Erde zwischen den Planeten; hineinzoomen bringt dich zurück.'), () => enterSolar()],
+  mig: [() => T('Great journeys', 'Große Wanderungen'), () => T('Animal migrations through the year, to look at at your own pace.', 'Tierwanderungen durchs Jahr, in deinem Tempo anzusehen.'), () => setMig(true)],
+  alone: [() => T('Only you', 'Nur du'), () => T('All other lights fade: one minute about you.', 'Alle anderen Lichter verblassen: eine Minute über dich.'), () => startAlone()],
+};
 function setTourSpeed(v) {
   if (tour) {
     const now = tour.paused ? tour.pausedAt : performance.now(), k = tourSpeed / v, s = TOURS[tour.id].steps[tour.i];
@@ -3195,12 +3210,12 @@ const REFS_DE = { person: 'Mensch 1,8 m', tower: 'Eiffelturm 330 m', burj: 'Burj
 for (const k in REFS_DE) bil(REFS[k], 'name', REFS_DE[k]);
 // graphics settings
 const GFX_DE = {
-  pr: ['Renderauflösung', 'gezeichnete Pixel pro Bildschirmpunkt', { '0.75×': '0,75×', '1.25×': '1,25×', '1.5×': '1,5×' }],
+  pr: ['Renderauflösung', 'gezeichnete Pixel pro Bildschirmpunkt', { '0.5×': '0,5×', '0.75×': '0,75×', '1.25×': '1,25×', '1.5×': '1,5×' }],
   aa: ['Kantenglättung', 'Antialiasing; wirkt nach dem Neuladen der Seite', { off: 'aus', on: 'an' }],
-  people: ['Lichter für Menschen', 'höchstens gleichzeitig gezeichnet', { '0.3 million': '0,3 Mio.', '0.6 million': '0,6 Mio.', '1.3 million': '1,3 Mio.', '2.6 million': '2,6 Mio.', '4 million': '4 Mio.' }],
-  animals: ['Tierpunkte pro Gruppe', 'mit allen Gruppen etwa 35-mal so viele', { '10,000': '10.000', '20,000': '20.000', '35,000': '35.000', '60,000': '60.000', '100,000': '100.000' }],
-  refresh: ['Nachladen beim Bewegen', 'wie oft neue Lichter gesetzt werden', { 'every 3.5 s': 'alle 3,5 s', 'every 2.5 s': 'alle 2,5 s', 'every 1.8 s': 'alle 1,8 s', 'every 1.4 s': 'alle 1,4 s', 'every 0.9 s': 'alle 0,9 s' }],
-  mesh: ['Glätte der Erdkugel', 'Dreiecke der Kugel', { 'very low': 'sehr niedrig', low: 'niedrig', medium: 'mittel', high: 'hoch', 'very high': 'sehr hoch' }],
+  people: ['Lichter für Menschen', 'höchstens gleichzeitig gezeichnet', { '0.15 million': '0,15 Mio.', '0.3 million': '0,3 Mio.', '0.6 million': '0,6 Mio.', '1.3 million': '1,3 Mio.', '2.6 million': '2,6 Mio.', '4 million': '4 Mio.' }],
+  animals: ['Tierpunkte pro Gruppe', 'mit allen Gruppen etwa 35-mal so viele', { '5,000': '5.000', '10,000': '10.000', '20,000': '20.000', '35,000': '35.000', '60,000': '60.000', '100,000': '100.000' }],
+  refresh: ['Nachladen beim Bewegen', 'wie oft neue Lichter gesetzt werden', { 'every 5 s': 'alle 5 s', 'every 3.5 s': 'alle 3,5 s', 'every 2.5 s': 'alle 2,5 s', 'every 1.8 s': 'alle 1,8 s', 'every 1.4 s': 'alle 1,4 s', 'every 0.9 s': 'alle 0,9 s' }],
+  mesh: ['Glätte der Erdkugel', 'Dreiecke der Kugel', { lowest: 'am niedrigsten', 'very low': 'sehr niedrig', low: 'niedrig', medium: 'mittel', high: 'hoch', 'very high': 'sehr hoch' }],
   tex: ['Kartendetail', 'Größe der Küstenkarte', {}],
   labels: ['Angezeigte Städtenamen', 'höchstens', {}],
   stars: ['Sterne', 'Sterne im Hintergrund', { off: 'aus', on: 'an' }],
@@ -3230,7 +3245,7 @@ const cityName = n => LANG === 'de' && CITY_DE[n] ? CITY_DE[n] : n;
 const STATIC = {
   tourBtn: ['Tour', 'Tour'], tAlone: ['Only you', 'Nur du'], tInner: ['Journey inward', 'Reise nach innen'], tOuter: ['Journey outward', 'Reise nach außen'], tGrand: ['The whole journey', 'Die ganze Reise'], grpTrips: ['Journeys', 'Reisen'], solOut: ['Further out →', 'Weiter hinaus →'], tMig: ['Migrations', 'Wanderungen'], solLight: ['Send out light', 'Licht losschicken'], tRotate: ['Rotate', 'Drehen'],
   tEvents: ['Right now', 'Genau jetzt'], tBorders: ['Borders', 'Grenzen'], tCountries: ['Countries', 'Länder'], tCities: ['Cities', 'Städte'], gfxWord: ['Graphics', 'Grafik'],
-  grpBeings: ['Living beings', 'Lebewesen'], openCompare: ['Compare the numbers', 'Zahlen vergleichen'], openCompare2: ['Compare the numbers', 'Zahlen vergleichen'],
+  grpBeings: ['Living beings', 'Lebewesen'], 
   yearWord: ['Year', 'Jahr'],
   hintText: ['Scroll or pinch to zoom toward the pointer, drag to move, double-click to dive in. Keep zooming until one light is one person. Click a flash to see what it is, or anywhere else to see what lives there. Up close, people follow the 1 km GHSL 2025 population grid (sparsest regions: modelled), never anyone’s real address.',
     'Scrollen oder mit zwei Fingern zoomen, ziehen zum Bewegen, Doppelklick zum Eintauchen. Zoom weiter, bis ein Licht ein Mensch ist. Klick einen Blitz an, um zu sehen, was er bedeutet, oder irgendwo sonst, um zu sehen, was dort lebt. Aus der Nähe folgen die Menschen dem 1-km-Bevölkerungsraster GHSL 2025 (am dünnsten besiedelte Gegenden: modelliert), nie einer echten Adresse.'],
@@ -3245,9 +3260,9 @@ const STATIC = {
   zooTitle: ['You share the planet with more than <span style="font-style:italic;color:var(--glow)">half a sextillion</span> animals', 'Du teilst den Planeten mit mehr als <span style="font-style:italic;color:var(--glow)">einer halben Trilliarde</span> Tieren'],
   zooLead: ['Where they live comes from data: land animals and birds follow plant growth (2022 satellite rainfall plus temperature), soil animals follow 6,825 measured soil samples, and sea life follows plankton measured by satellite (2021). Each group has its own colour and its own scale. Hover a group for its source; the tag shows how good the number is: <span style="color:#8fe3a0">counted</span>, <span style="color:#9fc0ff">study estimate</span> or <span style="color:#e7b36b">rough estimate</span> (no global count exists).',
     'Wo sie leben, stammt aus Daten: Landtiere und Vögel folgen dem Pflanzenwachstum (Satelliten-Niederschlag 2022 plus Temperatur), Bodentiere folgen 6.825 gemessenen Bodenproben, und das Meeresleben folgt dem per Satellit gemessenen Plankton (2021). Jede Gruppe hat eine eigene Farbe und einen eigenen Maßstab. Fahr mit der Maus über eine Gruppe für die Quelle; die Markierung zeigt, wie gut die Zahl ist: <span style="color:#8fe3a0">gezählt</span>, <span style="color:#9fc0ff">Studien-Schätzung</span> oder <span style="color:#e7b36b">grobe Schätzung</span> (es gibt keine weltweite Zählung).'],
-  openSoil: ['Look into 10 × 10 cm of soil here', '10 × 10 cm Boden hier ansehen'],
-  grpView: ['View', 'Ansicht'], grpLive: ['Life and sound', 'Leben und Ton'], grpTime: ['Time', 'Zeit'], grpSet: ['Settings', 'Einstellungen'],
-  hintShort: ['Zoom with the scroll wheel or two fingers until one light is one person. Click anywhere to see what lives there.', 'Zoome mit dem Mausrad oder zwei Fingern, bis ein Licht ein Mensch ist. Klick irgendwo hin, um zu sehen, was dort lebt.'], tHeight: ['Population as height', 'Bevölkerung als Höhe'], openDepth: ['How deep do they live?', 'Wie tief leben sie?'], discBtn: ['AI-generated · an approximation · no liability', 'KI-generiert · eine Annäherung · ohne Gewähr'],
+  
+  grpView: ['View', 'Ansicht'], grpLive: ['Life and sound', 'Leben und Ton'], grpSet: ['Settings', 'Einstellungen'],
+  hintShort: ['Zoom with the scroll wheel or two fingers until one light is one person. Click anywhere to see what lives there.', 'Zoome mit dem Mausrad oder zwei Fingern, bis ein Licht ein Mensch ist. Klick irgendwo hin, um zu sehen, was dort lebt.'], discBtn: ['AI-generated · an approximation · no liability', 'KI-generiert · eine Annäherung · ohne Gewähr'],
   srcBtn: ['Sources &amp; licences', 'Quellen &amp; Lizenzen'], srcLabel: ['Thank you to everyone who shares data', 'Danke an alle, die Daten teilen'], srcTitle: ['Sources &amp; licences', 'Quellen &amp; Lizenzen'],
   discLabel: ['Please note', 'Bitte beachten'], discTitle: ['Disclaimer', 'Hinweis und Haftungsausschluss'],
   discText: ['<p>This visualisation was made with the help of AI (Claude by Anthropic). It is meant as an <strong>approximation</strong> that makes orders of magnitude tangible. It does not claim to be complete or correct in every detail.</p><p>The numbers come from published data and estimates, some of them rough; where people and animals appear on the map is modelled, not measured. <strong>Errors are possible.</strong></p><p><strong>No liability</strong> is accepted for the correctness, completeness or timeliness of the data. Please check important numbers in the sources named on the page.</p>',
@@ -3597,7 +3612,7 @@ $('solBack').onclick = exitSolar; $('solOut').onclick = () => enterOuter(true, 1
 setInterval(() => { if (SOL.on) solPlace(); }, 60000);
 
 // ================= automatic graphics: if the chosen level runs too slowly, step down (only while chosen automatically) =================
-const GFX_ORDER = ['Very low', 'Low', 'Medium', 'High', 'Very high'];
+const GFX_ORDER = ['Lowest', 'Very low', 'Low', 'Medium', 'High', 'Very high'];
 const gfxWatch = { n: 0, sum: 0, done: false, t0: performance.now() };
 document.addEventListener('visibilitychange', () => { fpsCount = 0; fpsT0 = performance.now(); gfxWatch.n = 0; gfxWatch.sum = 0; gfxWatch.t0 = performance.now(); });   // a hidden tab is not a slow computer
 setInterval(() => {
@@ -3730,7 +3745,7 @@ function stepMoon() {
   const D = new Uint8Array(CW * CH);
   for (let j = 0; j < CH; j++) { const la = -90 + (j + 0.5) * CD, a = (CD * KM) ** 2 * Math.max(0.05, Math.cos(la * RAD)); for (let i = 0; i < CW; i++) { const c = j * CW + i, d = CTOT[c] / a; D[c] = Math.min(255, Math.round(Math.max(0, Math.log10(1 + d) / 4) * 255)); } }
   const tex = new THREE.DataTexture(D, CW, CH, THREE.LuminanceFormat, THREE.UnsignedByteType); tex.magFilter = tex.minFilter = THREE.LinearFilter; tex.needsUpdate = true;
-  if (!renderer.capabilities.vertexTextures) { $('tHeight').hidden = true; } else {
+  if (renderer.capabilities.vertexTextures) {
   peopleMat.uniforms.uDens = { value: tex }; peopleMat.uniforms.uH = { value: 0 };
   peopleMat.vertexShader = peopleMat.vertexShader.replace('uniform vec3 uSun;', 'uniform vec3 uSun; uniform sampler2D uDens; uniform float uH;')
     .replace('vec4 mv = modelViewMatrix * vec4(position, 1.0);', `vec3 pp = position;
@@ -3759,7 +3774,6 @@ function stepMoon() {
 }
 let heightOn = false, heightNow = 0;
 function stepHeight(dt) { if (!peopleMat.uniforms.uH) return; const target = heightOn ? Math.min(0.06, 0.35 * view.alt / ER) : 0; heightNow += (target - heightNow) * Math.min(1, dt * 2.5); peopleMat.uniforms.uH.value = heightNow < 1e-5 ? 0 : heightNow; }
-$('tHeight').onclick = () => { heightOn = !heightOn; $('tHeight').setAttribute('aria-pressed', heightOn); };
 
 // ================= how many species, and how many are threatened =================
 // described species (rounded, from the catalogues named) and the share of assessed species that are threatened (IUCN Red List, 2025)
@@ -3800,7 +3814,7 @@ function openDepth() {
   $('depthTitle').textContent = T('How deep do they live?', 'Wie tief leben sie?'); $('depthLabel').textContent = T('From the surface to the Mariana Trench', 'Von der Oberfläche bis in den Marianengraben');
   $('depth').hidden = false;
 }
-$('openDepth').onclick = openDepth; $('depthClose').onclick = () => { $('depth').hidden = true; };
+$('depthClose').onclick = () => { $('depth').hidden = true; };
 addEventListener('keydown', e => { if (e.key === 'Escape') $('depth').hidden = true; });
 
 // ================= animals: what one dot means, in one short line (only while animals are shown) =================
@@ -3972,7 +3986,8 @@ setInterval(() => { if (!migOn) return; const mc = $('migCap'), tc = $('tourCap'
 const INNER = { on: false, z: 1.3, tz: 1.3, auto: false, i: 0, fly: null, holdUntil: 0, fade: 0, fadeTo: 0, push: 1, hinted: false, hl: {}, ptr: new Map(), pinch: null, back: false, fromZoom: false, calm: 0, off: null };
 const inCv = $('innerCv'), ix = inCv.getContext('2d');
 let inW = 1, inH = 1, inDPR = 1;
-function inResize() { inDPR = Math.min(2, devicePixelRatio || 1); inW = innerWidth; inH = innerHeight; inCv.width = Math.round(inW * inDPR); inCv.height = Math.round(inH * inDPR); }
+function inResize() { inDPR = Math.min(GFX.pr <= 0.5 ? 1 : 2, devicePixelRatio || 1);   // the journeys: sharp, except on the lowest graphics
+  inW = innerWidth; inH = innerHeight; inCv.width = Math.round(inW * inDPR); inCv.height = Math.round(inH * inDPR); }
 const inRndF = seed => { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; };
 const ism = (a, b, x) => { const f = Math.max(0, Math.min(1, (x - a) / (b - a))); return f * f * (3 - 2 * f); };
 // visible between zIn1 and zOut0, fading in from zIn0 and out towards zOut1 (z falls as you zoom in)
@@ -4608,7 +4623,7 @@ $('moreBtn').onclick = () => { moreOn = !moreOn; try { localStorage.setItem('ebl
 
 // ================= reset: everything as on a first visit (only your place, if you shared it, stays) =================
 function resetAll() {
-  $('src').hidden = true; $('depth').hidden = true; if (heightOn) $('tHeight').click(); SOL.real = false; $('realChk').checked = false; exitSolar(); stopTour(); closeTourMenu(); ovClose(); $('gfx').hidden = true; $('disc').hidden = true; $('evTip').hidden = true; $('infoCard').hidden = true;
+  $('src').hidden = true; $('depth').hidden = true; heightOn = false; SOL.real = false; $('realChk').checked = false; exitSolar(); stopTour(); closeTourMenu(); ovClose(); $('gfx').hidden = true; $('disc').hidden = true; $('evTip').hidden = true; $('infoCard').hidden = true;
   const want = (on, cur, id) => { if (on !== cur) $(id).click(); };
   want(true, peopleOn, 'tPeople'); want(false, citiesOn, 'tCities'); want(true, showEvents, 'tEvents'); want(false, borders.visible, 'tBorders');
   want(true, countriesOn, 'tCountries'); latLines.visible = false;
@@ -4616,7 +4631,7 @@ function resetAll() {
   Object.assign(realmOn, { land: true, soil: true, sky: true, water: true, micro: false, plants: false });
   for (const k in groupOn) groupOn[k] = k !== 'ghosts';
   setAnimals(false); syncAnimals();
-  setYearIdx(STOPS.length - 1);
+  openTime(false);
     { const d = detectGfx(); Object.assign(GFX, GFX_PRESETS[d.preset], { preset: d.preset, custom: false, auto: true, chip: d.chip }); } gfxWatch.n = 0; gfxWatch.sum = 0; gfxWatch.done = false; $('gfxCustom').checked = false; applyGfx();
   try { for (const k of ['ebl-lang', 'ebl-hints', 'ebl-toured']) localStorage.removeItem(k); } catch (e) {}   // as on a first visit: the browser's language, the hints, the inviting tour button
   hintSeen = {}; renderHints(); setTxt(1); $('gfxToast').hidden = true;
